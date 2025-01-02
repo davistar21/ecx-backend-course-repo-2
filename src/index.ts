@@ -1,9 +1,12 @@
 import express from "express"
 import userRouter from "./routes/user.routes";
+import { connectDB } from "./config/connectdb";
 
 const PORT = 5182
 
 const app = express();
+
+connectDB()
 
 app.use(express.json());
 app.use('/', userRouter)
