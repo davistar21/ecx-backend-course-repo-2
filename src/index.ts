@@ -9,7 +9,7 @@ const app = express();
 connectDB()
 
 app.use(express.json());
-app.use('/', userRouter)
+app.use('/user', userRouter)
 
 // app.get('/users', (req, res)=>{
 //   res.send("users will be with you shortly")
