@@ -7,6 +7,12 @@ export const registerSchema = joi.object({
   password: joi.string().min(8).max(49).required()
 })
 
+export const loginSchema = joi.object({
+  email: joi.string().email().required(),
+  password: joi.string().min(8).max(49).required()
+})
+
+
 let g = {
   "name": "Calhanogolu",
   "email": "C",
