@@ -1,7 +1,11 @@
 import {Request, Response, NextFunction} from "express";
 import { loginSchema, registerSchema } from "../middleware/user.validate.middleware";
 import { userModel } from "../models/user.model";
-import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 export async function registerUser(req: Request, res: Response, next: NextFunction){
   const {error} = registerSchema.validate(req.body)
@@ -55,13 +59,14 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
   }
   try {
     const {email, password} = req.body;
-    const userExists = await userModel.findOne({email});
-    if (userExists && (await bcrypt.compare(password, userExists.password))){
+    const user = await userModel.findOne({email});
+    if (user && (await bcrypt.compare(password, user.password))){
       console.log("User logged in successfully!")
       res.status(200).json({
-        _id: userExists.id,
-        name: userExists.name,
-        email: userExists.email
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        token: generateToken(user.id)
       })
     }  else {
       res.status(400)
@@ -71,3 +76,10 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
     next(error)
   }
 }
+
+
+const generateToken = (id: string) => {
+  const secretKey: string = process.env.JWT_SECRET || "donij-aehd-ncilakejo-dudfo-dfnls-dmaasd-d";
+  return jwt.sign({id}, secretKey, { expiresIn: '24h' });
+};
+
