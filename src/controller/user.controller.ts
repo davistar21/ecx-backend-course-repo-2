@@ -3,7 +3,9 @@ import { loginSchema, registerSchema } from "../middleware/user.validate.middlew
 import { userModel } from "../models/user.model";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
 import * as dotenv from "dotenv";
+import { ValidationError } from "../middleware/err.middleware";
 
 dotenv.config();
 
@@ -91,10 +93,19 @@ export async function getMe (req: AuthRequest, res: Response, next: NextFunction
 export async function getUser (req: Request, res: Response, next:NextFunction) {
   try{
     const userId = req.params.userId;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)){
+      res.status(400).json({message: "Invalid user ID format"})
+      return
+    }
+
     if (!userId) {
       res.status(400).json("Invalid user!");
       return
-    }
+    } 
+    // if (!userId) {
+    //   throw new ValidationError("Invalid User")
+    // }
     const user = await userModel.findById(userId).select("-password") //minus password, return the user without their password.
     if (!user) {
       res.status(400).json("User not found!")
