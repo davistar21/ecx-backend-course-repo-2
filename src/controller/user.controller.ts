@@ -7,6 +7,13 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
+interface SearchQuery {
+  age: string
+}
+interface AuthRequest {
+  user? : {id: string}
+}
+
 export async function registerUser(req: Request, res: Response, next: NextFunction){
   const {error} = registerSchema.validate(req.body)
   if (error){
@@ -77,6 +84,51 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
   }
 }
 
+export async function getMe (req: AuthRequest, res: Response, next: NextFunction){
+    res.status(200).json(req.user)
+}
+
+export async function getUser (req: Request, res: Response, next:NextFunction) {
+  try{
+    const userId = req.params.userId;
+    if (!userId) {
+      res.status(400).json("Invalid user!");
+      return
+    }
+    const user = await userModel.findById(userId).select("-password") //minus password, return the user without their password.
+    if (!user) {
+      res.status(400).json("User not found!")
+      return
+    }
+    res.status(200).json({message: user})
+  } catch (error:any) {
+    next(error)
+  }
+  
+}
+
+export async function getUsers (req: Request<{}, {}, {}, SearchQuery>, res: Response, next:NextFunction) {
+  try {
+    const userAge = req.query.age;
+    const query: { age?: {$gt: number} } = {};
+
+    if (userAge) {
+      const age = parseInt(userAge, 10);
+      if(isNaN(age)) {
+        res.status(400).json({message: "Invalid age parameter"});
+        return
+      }
+      query.age = { $gt: age }
+    }
+
+    const users = await userModel.find({query}).select("-password");
+    res.status(200).json({message: users})
+  } 
+  catch (error:any) {
+    res.status(400).json({message: error.details[0].message});
+    next(error)
+  }
+}
 
 const generateToken = (id: string) => {
   const secretKey: string = process.env.JWT_SECRET || "donij-aehd-ncilakejo-dudfo-dfnls-dmaasd-d";

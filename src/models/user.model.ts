@@ -7,10 +7,14 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: [true, "Please provide a valid email!"]
+    required: [true, "Please provide a valid email!"],
+    unique: [true],
   },
   phoneNumber: {
     type: Number 
+  },
+  age: {
+    type: Number
   },
   password: {
     type: String,
