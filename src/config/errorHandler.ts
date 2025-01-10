@@ -1,6 +1,6 @@
 import { ErrorRequestHandler, NextFunction, Request, Response } from "express";
 import logger from "./logger";
-import { AppError } from "../middleware/err.middleware";
+import { AppError, ValidationError } from "../middleware/err.middleware";
 
 
 export const errorHandler: ErrorRequestHandler = async (
@@ -18,12 +18,14 @@ export const errorHandler: ErrorRequestHandler = async (
     })
 
     if (error instanceof AppError) {
-      res.status(error.statusCode).json({
-        status: "error",
-        message: error.message
-      });
+        res.status(error.statusCode).json({
+          status: "error",
+          message: error.message,
+          ...(error instanceof ValidationError && {details: (error as ValidationError).details }),
+        });
       return
     }
+    
     res.status(500).json({
       status: "error",
       message: "Internal server error!"
@@ -36,3 +38,5 @@ export const errorHandler: ErrorRequestHandler = async (
     })
   }
 }
+
+

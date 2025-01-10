@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 import * as dotenv from "dotenv";
-import { ValidationError } from "../middleware/err.middleware";
+import { AppError, ValidationError } from "../middleware/err.middleware";
 
 dotenv.config();
 
@@ -29,7 +29,7 @@ export async function registerUser(req: Request, res: Response, next: NextFuncti
 
     const userExists = await userModel.findOne({email});
     if (userExists){
-      throw new Error("Email already exists. Please login!")
+      throw new ValidationError("Email already exists. Please login!")
     };
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -48,8 +48,8 @@ export async function registerUser(req: Request, res: Response, next: NextFuncti
         phoneNumber: newUser.phoneNumber,
       })
     } else {
-      res.status(400);
-      throw new Error("Invalid user data!")
+      // res.status(400);
+      throw new AppError(400, "Invalid user data!")
     }
   }
   catch(error: any){
@@ -69,13 +69,14 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
   try {
     const {email, password} = req.body;
     const user = await userModel.findOne({email});
+    const token = generateToken(user?.id);
     if (user && (await bcrypt.compare(password, user.password))){
       console.log("User logged in successfully!")
       res.status(200).json({
         _id: user.id,
         name: user.name,
         email: user.email,
-        token: generateToken(user.id)
+        token,
       })
     }  else {
       res.status(400)
@@ -86,11 +87,16 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
   }
 }
 
-export async function getMe (req: AuthRequest, res: Response, next: NextFunction){
-    res.status(200).json(req.user)
-}
-
-export async function getUser (req: Request, res: Response, next:NextFunction) {
+export async function getMe (req: AuthRequest, res: Response, next: NextFunction) {
+  if (req.user) {
+    res.status(200).json(req.user);
+  } else {
+    res.status(400).json({
+      message: "No logged in user",
+    });
+  }
+};
+export const getUser = async (req: Request, res: Response, next:NextFunction) => {
   try{
     const userId = req.params.userId;
 
@@ -118,7 +124,7 @@ export async function getUser (req: Request, res: Response, next:NextFunction) {
   
 }
 
-export async function getUsers (req: Request<{}, {}, {}, SearchQuery>, res: Response, next:NextFunction) {
+export const getUsers = async (req: Request<{}, {}, {}, SearchQuery>, res: Response, next:NextFunction) => {
   try {
     const userAge = req.query.age;
     const query: { age?: {$gt: number} } = {};

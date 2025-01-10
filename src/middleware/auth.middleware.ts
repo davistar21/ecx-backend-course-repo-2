@@ -6,29 +6,30 @@ import { userModel } from "../models/user.model";
 interface AuthRequest extends Request{
     user?:{id:string}
 }
-const authenticateToken = async (req:AuthRequest, res:Response, next:NextFunction) => {
-    const token = req.header('Authorization')?.split(' ')[1]; // Get token from Authorization header
-    if (!token) {
-        return res.status(401).json({ message: "Access Denied. No token provided." });
-    }
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET || "donij-aehd-ncilakejo-dudfo-dfnls-dmaasd-d") as CustomJWTPayload;
-
-    const authenticatedUser = await userModel.findById(decodedToken.id).select("-password");
-    if (!authenticatedUser) {
-        res.status(401).json({
-            message: "No user found!"
-        });
-        return
-    }
-      req.user = { id: authenticatedUser.id };
-
+export const authenticateToken = async (req:AuthRequest, res:Response, next:NextFunction) => {
+    
     try {
         const secretKey = process.env.JWT_SECRET || "donij-aehd-ncilakejo-dudfo-dfnls-dmaasd-d";
-        const verified = jwt.verify(token, secretKey);
-        req.body.user = verified;
+        const token = req.header('Authorization')?.split(' ')[1]; // Get token from Authorization header
+        if (!token) {
+            return res.status(401).json({ message: "Access Denied. No token provided." });
+        }
+        const decodedToken = jwt.verify(token, secretKey) as CustomJWTPayload;
+
+        const authenticatedUser = await userModel.findById(decodedToken.id).select("-password");
+        if (!authenticatedUser) {
+            res.status(401).json({
+                message: "No user found!"
+            });
+            return
+        }
+        //   req.user = { id: authenticatedUser.id };
+
+
         next(); 
     } catch (error) {
         res.status(400).json({ message: "Invalid token" });
+        next(error)
     }
 };
 

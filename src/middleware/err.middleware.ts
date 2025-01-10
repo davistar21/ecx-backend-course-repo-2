@@ -10,7 +10,13 @@ export class AppError extends Error{
 }
 
 export class ValidationError extends AppError {
-  constructor(message: string) {
-    super(400, message)
+  constructor(message: string, details: string[] = []) {
+    super(400, message); 
+    this.details = details;
+    Object.setPrototypeOf(this, ValidationError.prototype); 
   }
+
+  details: string[];
 }
+
+

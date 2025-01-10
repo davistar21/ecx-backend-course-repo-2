@@ -10,6 +10,7 @@ const logger = winston.createLogger({
   transports: [
     new winston.transports.File({ filename: "error.logs", level: "error"}),
     new winston.transports.File({ filename: "combined.logs"}),
+    new winston.transports.File({ filename: "detailed.logs", level: "silly"}),
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(),
