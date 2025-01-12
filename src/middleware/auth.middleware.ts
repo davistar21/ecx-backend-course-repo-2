@@ -10,7 +10,7 @@ export const authenticateToken = async (req:AuthRequest, res:Response, next:Next
     
     try {
         const secretKey = process.env.JWT_SECRET || "donij-aehd-ncilakejo-dudfo-dfnls-dmaasd-d";
-        const token = req.header('Authorization')?.split(' ')[1]; // Get token from Authorization header
+        const token = req.header('Authorization')?.split(' ')[1];
         if (!token) {
             return res.status(401).json({ message: "Access Denied. No token provided." });
         }
