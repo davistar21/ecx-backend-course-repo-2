@@ -3,6 +3,7 @@ import userRouter from "./routes/user.routes";
 import { connectDB } from "./config/connectdb";
 import requestLogger from "./middleware/requestLogger.middleware";
 import { errorHandler } from "./config/errorHandler";
+import { getUsers } from "./controller/user.controller";
 
 const PORT = 5182
 

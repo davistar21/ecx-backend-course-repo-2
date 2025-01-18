@@ -23,7 +23,7 @@ export const authenticateToken = async (req:AuthRequest, res:Response, next:Next
             });
             return
         }
-        //   req.user = { id: authenticatedUser.id };
+          req.user = { id: authenticatedUser.id };
 
 
         next(); 
